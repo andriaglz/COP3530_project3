@@ -90,7 +90,6 @@ bool CampusCompass::ParseCSV(const string &edges_filepath, const string &classes
         getline(ss,class_info.location_id,',');
         getline(ss,class_info.start_time,',');
         getline(ss,class_info.end_time,',');
-        class_info.num_students_enrolled = 0;
 
         // cout << class_code << ", " << class_info.location_id << ", " << class_info.start_time << ", " << class_info.end_time << endl;
 
@@ -252,9 +251,10 @@ bool CampusCompass::ParseCommand(const string &command) {
 }
 
 // command processing
-bool CampusCompass::Insert(string student_name,string student_id,string residence_id,int n,vector<string> class_codes){
+bool CampusCompass::Insert(string student_name,string student_id,string residence_id,set<string> class_codes){
     /*
-    Adds a student to the class(es) with the specified name: STUDENT_NAME, STUDENT_ID,   RESIDENCE_LOCATION_ID, and N classes with Class Codes: CLASSCODE_1 CLASSCODE_2  … CLASSCODE_N
+    Adds a student to the class(es) with the specified name: STUDENT_NAME, STUDENT_ID,   
+        RESIDENCE_LOCATION_ID, and N classes with Class Codes: CLASSCODE_1 CLASSCODE_2  … CLASSCODE_N
     The STUDENT_ID must be unique.
     The STUDENT_ID and STUDENT_NAME must satisfy the constraints stated below.
     There must be N classes after reading N; otherwise, the entry is invalid.
@@ -262,6 +262,16 @@ bool CampusCompass::Insert(string student_name,string student_id,string residenc
     NAME identifier will be separated by quotes for parsing, e.g., "Josh Smith."
     CLASSCODE identifiers will always be a single word, e.g., COP3530
     */
+    // add student to student_directory
+    Student s;
+    s.class_codes = class_codes;
+    s.residence_location_id = residence_id;
+    s.student_name = student_name;
+    student_directory[student_id] = s;
+    // add student to each of the classes
+    for (string class_code : class_codes){
+        class_directory[class_code].students_enrolled.insert(student_id);
+    }
     return true;
 }
 bool CampusCompass::Remove(string student_id){
@@ -270,34 +280,63 @@ bool CampusCompass::Remove(string student_id){
     If deletion is successful, print “successful.”
     If the STUDENT_ID does not exist, print “unsuccessful.”
     */
+    // remove from classes
+    set<string> classes = student_directory[student_id].class_codes;
+    for (string class_code : classes){
+        class_directory[class_code].students_enrolled.erase(student_id);
+    }
+    // remove from student directory
+    student_directory.erase(student_id);
     return true;
 }
 bool CampusCompass::DropClass(string student_id,string class_code){
     /*
     Find and drop the class, CLASSCODE, for a given student.
-    Note: If we remove a CLASSCODE from a student with only that CLASSCODE, the student has 0 classes and should be dropped from the data structure.
+    Note: If we remove a CLASSCODE from a student with only that CLASSCODE,    
+        the student has 0 classes and should be dropped from the data structure.
     Still prints “successful” in this case
     Fails if a student with STUDENT_ID does not exist or if CLASSCODE does not exist.
     Fails if a student with STUDENT_ID does not have CLASSCODE
     prints “successful” if dropping is successful and prints “unsuccessful” otherwise.
     */
+    // remove student from class
+    class_directory[class_code].students_enrolled.erase(student_id);
+    // remove class from student schedule
+    student_directory[student_id].class_codes.erase(class_code);
+    // remove student from directory if the student now has 0 classes
+    if (student_directory[student_id].class_codes.empty()){
+        student_directory.erase(student_id);
+    }
     return true;
 }
 bool CampusCompass::ReplaceClass(string student_id, string class_code_1, string class_code_2){
     /*
     Find a student with UFID number: ID and replace CLASSCODE_1 with CLASSCODE_2 
-    Should fail if the student does not exist, does not have CLASSCODE_1, or already has CLASSCODE_2; or if there is no class with code CLASSCODE_2
+    Should fail if the student does not exist, does not have CLASSCODE_1, or already has CLASSCODE_2; 
+        or if there is no class with code CLASSCODE_2
     prints “successful” if the replacement is successful and prints “unsuccessful” otherwise.
     */
+    // remove student from class 1
+    DropClass(student_id,class_code_1);
+    // add student to class 2
+    student_directory[student_id].class_codes.insert(class_code_2);
+    class_directory[class_code_2].students_enrolled.insert(student_id);
     return true;
 }
 bool CampusCompass::RemoveClass(string class_code){
     /*
     Removes a class CLASSCODE from the schedule for all students.
-    Note: If we remove a CLASSCODE from a student with only that CLASSCODE and the student has 0 classes, then the student should be dropped from the data structure.
+    Note: If we remove a CLASSCODE from a student with only that CLASSCODE and the student has 0 classes, 
+        then the student should be dropped from the data structure.
     Prints the number of students the class was dropped from.
     E.g., if 4 students were enrolled in COP3530 then “removeClass COP3530” would print "4".
     */
+    // remove all students from this class
+    for (string student_id : class_directory[class_code].students_enrolled){
+        DropClass(student_id,class_code);
+    }
+    // remove class from class directory
+    class_directory.erase(class_code);
     return true;
 }
 bool CampusCompass::ToggleEdgesClosure(int n,vector<pair<string,string>> location_pairs){
@@ -386,13 +425,13 @@ bool CampusCompass::ProcessCommand(const string &command){
         string name,id,residence_id,n_str;
         input_stream >> name >> id >> residence_id >> n_str;
         int n = stoi(n_str);
-        vector<string> class_codes;
+        set<string> class_codes;
         for (int i=0;i<n;i++){
             string class_code;
             input_stream >> class_code;
-            class_codes.push_back(class_code);
+            class_codes.insert(class_code);
         }
-        return Insert(name,id,residence_id,n,class_codes);
+        return Insert(name,id,residence_id,class_codes);
     } else if (keyword == "remove"){
         // remove STUDENT_ID
         input_stream >> student_id;

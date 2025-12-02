@@ -2,14 +2,14 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
 using namespace std;
 
 struct Student {
     // string student_id;
     string student_name;
     string residence_location_id;
-    int num_classes;
-    vector<string> class_codes;
+    set<string> class_codes;
 };
 
 struct Class {
@@ -18,7 +18,7 @@ struct Class {
     string location_id;
     string start_time;
     string end_time;
-    int num_students_enrolled;
+    set<string> students_enrolled;  //set of student ids
 };
 
 class CampusCompass {
@@ -37,7 +37,7 @@ public:
 
     // command processing
     bool ProcessCommand(const string &command);
-    bool Insert(string student_name,string student_id,string residence_id,int n,vector<string> class_codes);
+    bool Insert(string student_name,string student_id,string residence_id,set<string> class_codes);
     bool Remove(string student_id);
     bool DropClass(string student_id,string class_code);
     bool ReplaceClass(string student_id, string class_code_1, string class_code_2);
