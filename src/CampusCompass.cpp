@@ -2,13 +2,80 @@
 
 #include <string>
 #include <sstream>
+#include <fstream>
+#include <iostream>
 using namespace std;
 
 CampusCompass::CampusCompass() {
-    // initialize your object
+    // constructor
+    ;
 }
 
 bool CampusCompass::ParseCSV(const string &edges_filepath, const string &classes_filepath) {
+    // open csv files
+    ifstream edges_file(edges_filepath);
+    ifstream classes_file(classes_filepath);
+
+    if (!edges_file.is_open() || !classes_file.is_open())
+        return false;
+
+    // edges file
+    string line;
+    // header line
+    // LocationID_1,LocationID_2,Name_1,Name_2,Time
+    getline(edges_file, line);
+    // data lines
+    while (getline(edges_file, line)){
+        // parse each column in the line
+        stringstream ss(line);
+        string id_1,id_2,name_1,name_2,time;
+        getline(ss,id_1,',');
+        getline(ss,id_2,',');
+        getline(ss,name_1,',');
+        getline(ss,name_2,',');
+        getline(ss,time,',');
+
+        if (!is_integer(time)){
+            cout << "Error: Incorrectly parsed time" << endl;
+            return false;
+        }
+
+        // initialize values in locations
+        if (locations.find(id_1) == locations.end())
+            locations[id_1] = name_1;
+        if (locations.find(id_2) == locations.end())
+            locations[id_2] = name_2;
+        
+        // add edge to graph
+        graph[id_1].push_back(make_pair(id_2,stoi(time)));
+    }
+
+    // classes file
+    // header line
+    // ClassCode,LocationID,Start Time (HH:MM),End Time (HH:MM)
+    getline(classes_file, line);
+    // data lines
+    while (getline(classes_file, line)){
+        // parse each column in the line and initialize Class struct
+        stringstream ss(line);
+        Class class_info;
+        string class_code;
+
+        getline(ss,class_code,',');
+        getline(ss,class_info.location_id,',');
+        getline(ss,class_info.start_time,',');
+        getline(ss,class_info.end_time,',');
+        class_info.num_students_enrolled = 0;
+
+        // validate time formatting
+        if (!(class_info.start_time[2]==':') || !(class_info.end_time[2]==':')){
+            cout << "Error: Incorrectly parsed start and end time" << endl;
+            return false;
+        }
+
+        // add class to class directory
+        class_directory[class_code] = class_info;
+    }
     // return boolean based on whether parsing was successful or not
     return true;
 }
