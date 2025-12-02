@@ -417,12 +417,12 @@ bool CampusCompass::IsConnected(string location_1,string location_2){
     return false;
 }
 
-int CampusCompass::ShortestPath(string s, string end){
+int CampusCompass::ShortestPath(string s, string dest){
     // Dijkstra's algorithm for shortest path problem
     // initialize S with the start vertex, s, and V-S with the remaining vertices.
-    set<string> S,V_S;
-    map<string,string> p;
-    map<string,int> d;
+    set<string> S,V_S;      //visited and nonvisited sets
+    map<string,string> p;   //predecessors
+    map<string,int> d;      //distances from source
     const int INF = 10000000000000;
     S.insert(s);
     for (auto l : locations){
@@ -448,13 +448,33 @@ int CampusCompass::ShortestPath(string s, string end){
     // while V-S is not empty
     while (!V_S.empty()){
         // for all u in V-S, find the smallest d[u]
+        int shortest_distance = INF;
+        string u;
+        for (string node : V_S){
+            if (d[node] < shortest_distance)
+                u = node;
+        }
         // remove u from V-S and add u to S
+        V_S.erase(u);
+        S.insert(u);
         // for all v adjacent to u in V-S
+        for (auto pair : graph[u]){
+            string v = pair.first;
+            int w = pair.second;
             // if d[u]+w(u,v) is less than d[v]
+            if (w >= 0 && d[u] + w < d[v]){     //w>=0 only considers open paths
                 // set d[v] to d[u] + w(u,v)
+                d[v] = d[u] + w;
                 // set p[v] to u
+                p[v] = u;
+            }  
+        }
     }
-    return -1;
+    // return the shortest distance from s to dest
+    if (d[dest] == INF)
+        return -1;  //unreachable
+    else
+        return d[dest];
 }
 
 bool CampusCompass::PrintShortestEdges(string student_id){
@@ -473,6 +493,13 @@ bool CampusCompass::PrintShortestEdges(string student_id){
     COP3530 | Total Time: -1
     The classes should be sorted in lexographical order. (E.g., COP3502 would come before COP3503).
     */
+    Student s = student_directory[student_id];
+    cout << "Name: " << s.student_name << endl;
+    for (string class_code : s.class_codes){
+        string class_location_id = class_directory[class_code].location_id;
+        int shortest_distance = ShortestPath(s.residence_location_id, class_location_id);
+        cout << class_code << " | " << "Total Time: " << shortest_distance << endl;
+    }
     return true;
 }
 bool CampusCompass::PrintStudentZone(string student_id){
