@@ -172,7 +172,7 @@ bool CampusCompass::ParseCommand(const string &command) {
     // student id commands
     if (is_in(keyword,{"remove","dropClass","replaceClass"})){
         // validate student id
-        if (student_directory.find(argument_1) == student_directory.end())
+        if (!(student_directory.find(argument_1) == student_directory.end()))
             // student id must be present in the directory
             return false;
         
