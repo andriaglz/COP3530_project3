@@ -2,6 +2,8 @@
     "files.associations": {
         "map": "cpp",
         "istream": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "vector": "cpp",
+        "iosfwd": "cpp"
     }
 }

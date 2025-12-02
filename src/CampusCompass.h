@@ -32,4 +32,20 @@ public:
     CampusCompass();                                // constructor
     bool ParseCSV(const string &edges_filepath, const string &classes_filepath);
     bool ParseCommand(const string &command);
+
+    // additional functions
+
+    // command processing
+    bool ProcessCommand(const string &command);
+    bool Insert(string student_name,string student_id,string residence_id,int n,vector<string> class_codes);
+    bool Remove(string student_id);
+    bool DropClass(string student_id,string class_code);
+    bool ReplaceClass(string student_id, string class_code_1, string class_code_2);
+    bool RemoveClass(string class_code);
+    bool ToggleEdgesClosure(int n,vector<pair<string,string>> location_pairs);
+    bool CheckEdgeStatus(string location_1,string location_2);
+    bool IsConnected(string location_1,string location_2);
+    bool PrintShortestEdges(string student_id);
+    bool PrintStudentZone(string student_id);
+    bool VerifySchedule(string student_id);
 };

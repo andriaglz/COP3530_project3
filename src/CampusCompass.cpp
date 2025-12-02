@@ -29,6 +29,8 @@ bool is_integer(string str){
     }
 }
 
+
+// CampusCompass functions
 CampusCompass::CampusCompass() {
     // constructor
     ;
@@ -249,3 +251,202 @@ bool CampusCompass::ParseCommand(const string &command) {
     return true;
 }
 
+// command processing
+bool CampusCompass::Insert(string student_name,string student_id,string residence_id,int n,vector<string> class_codes){
+    /*
+    Adds a student to the class(es) with the specified name: STUDENT_NAME, STUDENT_ID,   RESIDENCE_LOCATION_ID, and N classes with Class Codes: CLASSCODE_1 CLASSCODE_2  … CLASSCODE_N
+    The STUDENT_ID must be unique.
+    The STUDENT_ID and STUDENT_NAME must satisfy the constraints stated below.
+    There must be N classes after reading N; otherwise, the entry is invalid.
+    Also, prints “successful” if insertion is successful and prints “unsuccessful” otherwise.
+    NAME identifier will be separated by quotes for parsing, e.g., "Josh Smith."
+    CLASSCODE identifiers will always be a single word, e.g., COP3530
+    */
+    return true;
+}
+bool CampusCompass::Remove(string student_id){
+    /*
+    Find and remove a specific student with UFID number: STUDENT_ID from the data structure.
+    If deletion is successful, print “successful.”
+    If the STUDENT_ID does not exist, print “unsuccessful.”
+    */
+    return true;
+}
+bool CampusCompass::DropClass(string student_id,string class_code){
+    /*
+    Find and drop the class, CLASSCODE, for a given student.
+    Note: If we remove a CLASSCODE from a student with only that CLASSCODE, the student has 0 classes and should be dropped from the data structure.
+    Still prints “successful” in this case
+    Fails if a student with STUDENT_ID does not exist or if CLASSCODE does not exist.
+    Fails if a student with STUDENT_ID does not have CLASSCODE
+    prints “successful” if dropping is successful and prints “unsuccessful” otherwise.
+    */
+    return true;
+}
+bool CampusCompass::ReplaceClass(string student_id, string class_code_1, string class_code_2){
+    /*
+    Find a student with UFID number: ID and replace CLASSCODE_1 with CLASSCODE_2 
+    Should fail if the student does not exist, does not have CLASSCODE_1, or already has CLASSCODE_2; or if there is no class with code CLASSCODE_2
+    prints “successful” if the replacement is successful and prints “unsuccessful” otherwise.
+    */
+    return true;
+}
+bool CampusCompass::RemoveClass(string class_code){
+    /*
+    Removes a class CLASSCODE from the schedule for all students.
+    Note: If we remove a CLASSCODE from a student with only that CLASSCODE and the student has 0 classes, then the student should be dropped from the data structure.
+    Prints the number of students the class was dropped from.
+    E.g., if 4 students were enrolled in COP3530 then “removeClass COP3530” would print "4".
+    */
+    return true;
+}
+bool CampusCompass::ToggleEdgesClosure(int n,vector<pair<string,string>> location_pairs){
+    /*
+    Toggles the closure (soft delete) of N different edges.
+    Note: These edges are not being removed from the graph. It is simply closed until toggled back on.
+    Consecutive LOCATION_IDs will correspond to the same edges in this command:
+    E.g., "toggleEdgesClosure 2 5 6 9 10" would close 2 edges, the edge between 5 to 6 and 9 to 10.
+    If a given edge is already closed, this should open it, and if a given edge is open, this should close it.
+    You will always be given valid edges in this method.
+    prints  “successful” on completion.
+    */
+    return true;
+}
+bool CampusCompass::CheckEdgeStatus(string location_1,string location_2){
+    /*
+    Checks whether a given edge is open, closed, or does not exist.
+    Prints “open” “closed” or “DNE” accordingly.
+    */
+    return true;
+}
+bool CampusCompass::IsConnected(string location_1,string location_2){
+    /*
+    Checks if it's possible to travel between LOCATION_ID_1 and LOCATION_ID_2 using any of the available edges.
+    Prints “successful” if there is a path and “unsuccessful” if not.
+    */
+    return true;
+}
+bool CampusCompass::PrintShortestEdges(string student_id){
+    /*
+    Prints the shortest walking time from a student's residence to each of their classes using only currently available edges.
+    You will be given a valid student ID
+    Note: This does not take into account the start/end time of the classes. Just the time it takes to get to them using available edges.
+    Output should include the route for each class:
+    Name: [Student Name]
+    [ClassCode1] | Total Time: [Time]
+    [ClassCode2] | Total Time: [Time]
+    If a class is currently unable to be reached, then total time should equal -1.
+    Name: Manav Sanghvi
+    COP3530 | Total Time: -1
+    The classes should be sorted in lexographical order. (E.g., COP3502 would come before COP3503).
+    */
+    return true;
+}
+bool CampusCompass::PrintStudentZone(string student_id){
+    /*
+    A student’s “zone” is the minimum-cost set of edges required to connect their residence and all their classes' locations, based on their shortest-path routes.
+    You will be given a valid student ID
+    To calculate this, you must:
+    First: find the shortest path from the student’s residence to each of their classes using only currently accessible edges (Note: this is the same functionality as your printShortestEdges command). 
+    Second, create a sub-graph that contains all the vertices from all of those paths. Remaining edges must connect two nodes within this set of vertices.
+    Third, get the minimum spanning tree of this sub-graph. This is the “Student Zone.”
+    The output should be the total cost of this MST.
+    We will only test this on a valid subgraph (i.e., we will not test this when a student has no reachable classes).
+    Output Format:
+    Student Zone Cost For [Student Name]: X
+    */
+    return true;
+}
+bool CampusCompass::VerifySchedule(string student_id){
+    /*
+    A student's schedule is only feasible if they can physically get from one class to the next in the allotted time.
+    For example, if COP3530 is from 10:40-11:30 and CDA3101 is from 11:45-12:35, but the shortest path from COP3530 to CDA3101 takes longer than 15 minutes, then the schedule is not feasible.
+    Note: the shortest path must use only available edges.
+    If the Time Gap between the classes is longer than or equal to the shortest path, we output “Can make it!”
+    If the Time Gap between the classes is shorter than the shortest path, we print “Cannot make it!”
+    In the output, the classes should be organized from the earliest start time to the latest start time, and you are checking the Time Gap between consecutive classes.
+    If a student has only 1 class, print “unsuccessful” otherwise, print:
+    Schedule Check for [Student Name]:
+    [ClassCode1] - [ClassCode2] "Can make it!"
+    [ClassCode2] - [ClassCode3] "Cannot make it!"
+    */
+    return true;
+}
+
+
+bool CampusCompass::ProcessCommand(const string &command){
+    // process the validated command
+    istringstream input_stream(command);
+    string keyword, student_id, class_code;
+    input_stream >> keyword;
+
+    // extract necessary arguments and call respective functions
+    if (keyword == "insert"){
+        // insert STUDENT_NAME STUDENT_ID RESIDENCE_LOCATION_ID N CLASSCODE_1 CLASSCODE_2 … CLASSCODE_N
+        string name,id,residence_id,n_str;
+        input_stream >> name >> id >> residence_id >> n_str;
+        int n = stoi(n_str);
+        vector<string> class_codes;
+        for (int i=0;i<n;i++){
+            string class_code;
+            input_stream >> class_code;
+            class_codes.push_back(class_code);
+        }
+        return Insert(name,id,residence_id,n,class_codes);
+    } else if (keyword == "remove"){
+        // remove STUDENT_ID
+        input_stream >> student_id;
+        return Remove(student_id);
+    } else if (keyword == "dropClass"){
+        // dropClass STUDENT_ID CLASSCODE
+        input_stream >> student_id >> class_code;
+        return DropClass(student_id,class_code);
+    } else if (keyword == "replaceClass"){
+        // replaceClass STUDENT_ID CLASSCODE_1 CLASSCODE_2	
+        string class_code_2;
+        input_stream >> student_id >> class_code >> class_code_2;
+        return ReplaceClass(student_id, class_code, class_code_2);
+    } else if (keyword == "removeClass"){
+        // removeClass CLASSCODE
+        input_stream >> class_code;
+        return RemoveClass(class_code);
+    } else if (keyword == "toggleEdgesClosure"){
+        // toggleEdgesClosure N LOCATION_ID_X LOCATION_ID_Y ... LOCATION_ID_A LOCATION_ID_B	
+        string n_str;
+        input_stream >> n_str;
+        int n = stoi(n_str);
+        // extract all n pairs
+        vector<pair<string,string>> location_pairs;
+        for (int i=0;i<n;i++){
+            string location_1,location_2;
+            input_stream >> location_1 >> location_2;
+            location_pairs.push_back(make_pair(location_1,location_2));
+        }
+        return ToggleEdgesClosure(n,location_pairs);
+    } else if (keyword == "checkEdgeStatus"){
+        // checkEdgeStatus LOCATION_ID_X LOCATION_ID_Y	
+        string location_1,location_2;
+        input_stream >> location_1 >> location_2;
+        return CheckEdgeStatus(location_1,location_2);
+    } else if (keyword == "isConnected"){
+        // isConnected LOCATION_ID_1 LOCATION_ID_2	
+        string location_1,location_2;
+        input_stream >> location_1 >> location_2;
+        return IsConnected(location_1,location_2);
+    } else if (keyword == "printShortestEdges"){
+        // printShortestEdges ID
+        input_stream >> student_id;
+        return PrintShortestEdges(student_id);
+    } else if (keyword == "printStudentZone"){
+        // printStudentZone ID
+        input_stream >> student_id;
+        return PrintStudentZone(student_id);
+    } else if (keyword == "verifySchedule"){
+        // verifySchedule ID
+        input_stream >> student_id;
+        return VerifySchedule(student_id);
+    } else {
+        // invalid keyword
+        return false;
+    }
+}
