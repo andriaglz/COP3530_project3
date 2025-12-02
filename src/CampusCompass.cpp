@@ -6,6 +6,29 @@
 #include <iostream>
 using namespace std;
 
+// helper functions
+bool is_in(string target_item, vector<string> items){
+    for (string item : items){
+        if (item == target_item){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool valid_student_id(string id){
+    return true;
+}
+
+bool is_integer(string str){
+    try {
+        stoi(str);
+        return true;
+    } catch (exception e) {
+        return false;
+    }
+}
+
 CampusCompass::CampusCompass() {
     // constructor
     ;
@@ -67,6 +90,8 @@ bool CampusCompass::ParseCSV(const string &edges_filepath, const string &classes
         getline(ss,class_info.end_time,',');
         class_info.num_students_enrolled = 0;
 
+        // cout << class_code << ", " << class_info.location_id << ", " << class_info.start_time << ", " << class_info.end_time << endl;
+
         // validate time formatting
         if (!(class_info.start_time[2]==':') || !(class_info.end_time[2]==':')){
             cout << "Error: Incorrectly parsed start and end time" << endl;
@@ -115,7 +140,7 @@ bool CampusCompass::ParseCommand(const string &command) {
             n_int = stoi(n_str);
         else
             return false;
-        for (int i; i<n_int; i++){
+        for (int i=0; i<n_int; i++){
             string class_code;
             if (!(input_stream >> class_code))
                 // n class codes must be provided
@@ -176,7 +201,7 @@ bool CampusCompass::ParseCommand(const string &command) {
     }
     // removeClass
     if (keyword == "removeClass"){
-        if (student_directory.find(argument_1) == student_directory.end())
+        if (class_directory.find(argument_1) == class_directory.end())
             // student id must be present in the directory
             return false;
     }
@@ -224,25 +249,3 @@ bool CampusCompass::ParseCommand(const string &command) {
     return true;
 }
 
-// helper functions for ParseCommand
-bool is_in(string target_item, vector<string> items){
-    for (string item : items){
-        if (item == target_item){
-            return true;
-        }
-    }
-    return false;
-}
-
-bool valid_student_id(string id){
-    return true;
-}
-
-bool is_integer(string str){
-    try {
-        int int_version = stoi(str);
-        return true;
-    } catch (exception e) {
-        return false;
-    }
-}

@@ -1,84 +1,168 @@
-#include <catch2/catch_test_macros.hpp>
-#include <iostream>
+// #include <catch2/catch_test_macros.hpp>
+// #include <iostream>
+// #include "CampusCompass.h"
+// using namespace std;
 
-// change if you choose to use a different header name
-#include "CampusCompass.h"
+// // Andria Gonzalez Lopez
+// // 3572-4957
 
-using namespace std;
+// TEST_CASE("1 - Incorrect Commands","[insert]"){
+// 	AVL t;
 
-// the syntax for defining a test is below. It is important for the name to be
-// unique, but you can group multiple tests with [tags]. A test can have
-// [multiple][tags] using that syntax.
-TEST_CASE("Example Test Name - Change me!", "[tag]") {
-  // instantiate any class members that you need to test here
-  int one = 1;
+// 	SECTION("ID - Invalid Size - Too Short"){
+// 		// < 8 digits
+// 		REQUIRE(!t.insert("fldksjfl", "12"));
+// 	};
+// 	SECTION("ID - Invalid Size - Too Long"){
+// 		// > 8 digits
+// 		REQUIRE(!t.insert("fldksjfl", "100000000"));
+// 	};
+// 	SECTION("ID - Not Unique"){		
+// 		t.insert("name","12345678");
+// 		REQUIRE(!t.insert("name","12345678"));
+// 	};
+// 	SECTION("Name - Invalid Characters"){		
+// 		// not digits
+// 		REQUIRE(!t.insert("A!@#$%^B","87654321"));
+// 	};
+// 	SECTION("Name - Digits"){
+// 		// not a-z, A-Z, and spaces
+// 		REQUIRE(!t.insert("A239487938B","87654311"));
+// 	};
+// 	SECTION("Valid Input"){
+// 		// not a-z, A-Z, and spaces
+// 		REQUIRE(t.insert("A","35724957"));
+// 	};
+// }
 
-  // anything that evaluates to false in a REQUIRE block will result in a
-  // failing test
-  REQUIRE(one == 0); // fix me!
+// TEST_CASE("2 - Edge Cases","[remove][remove_inorder][level_count]"){
+// 	AVL t;
+// 	t.insert("Andria","12345678");
 
-  // all REQUIRE blocks must evaluate to true for the whole test to pass
-  REQUIRE(false); // also fix me!
-}
+// 	SECTION("Removing Nonexistent Node"){
+// 		REQUIRE(!t.remove("11111111"));
+// 	};
+// 	SECTION("Out of Bounds Inorder Removal"){
+// 		REQUIRE(!t.remove_inorder(10));
+// 	};
+// 	SECTION("Empty Tree Level Count"){
+// 		AVL t1;
+// 		REQUIRE(t1.level_count()==0);
+// 	}
+// }
 
-TEST_CASE("Test 2", "[tag]") {
-  // you can also use "sections" to share setup code between tests, for example:
-  int one = 1;
+// TEST_CASE("3 - Rotation Cases", "[insert][inorder]"){
+// 	SECTION("Insert"){
+// 		// valid input
+// 		AVL t;
+// 		REQUIRE(t.insert("Andria G","12345678"));
+// 	};
 
-  SECTION("num is 2") {
-    int num = one + 1;
-    REQUIRE(num == 2);
-  };
+// 	vector<string> rr = {"12345678","22345678","32345678"};
+// 	vector<string> ll = {"32345678","22345678","12345678"};
+// 	vector<string> rl = {"12345678","32345678","22345678"};
+// 	vector<string> lr = {"32345678","12345678","22345678"};
+// 	vector<string> expected = {"12345678", "22345678", "32345678"};
 
-  SECTION("num is 3") {
-    int num = one + 2;
-    REQUIRE(num == 3);
-  };
+// 	SECTION("RR Case"){
+// 		AVL t;
+// 		for (string i : rr){
+// 			t.insert("a", i);
+// 		}
+// 		vector<string> actual = t.inorder();
+// 		REQUIRE(actual == expected);
+// 	};
+// 	SECTION("LL Case"){
+// 		AVL t;
+// 		for (string i : ll){
+// 			t.insert("a", i);
+// 		}
+// 		vector<string> actual = t.inorder();
+// 		REQUIRE(actual == expected);
+// 	};
+// 	SECTION("RL Case"){
+// 		AVL t;
+// 		for (string i : rl){
+// 			t.insert("a", i);
+// 		}
+// 		vector<string> actual = t.inorder();
+// 		REQUIRE(actual == expected);
+// 	};
+// 	SECTION("LR Case"){
+// 		AVL t;
+// 		for (string i : lr){
+// 			t.insert("a", i);
+// 		}
+// 		vector<string> actual = t.inorder();
+// 		REQUIRE(actual == expected);
+// 	};
+// }
 
-  // each section runs the setup code independently to ensure that they don't
-  // affect each other
-}
+// TEST_CASE("4 - Deletions", "[insert][remove]"){
+// 	SECTION("No Children"){
+// 		vector<string> ids = {"00000004","00000002","00000001","00000003","00000005"};
+// 		AVL t;
+// 		for (string i : ids){
+// 			t.insert("a", i);
+// 		}
+// 		t.remove("00000003");
+// 		vector<string> actual = t.inorder();
+// 		vector<string> expected = {"00000001","00000002","00000004","00000005"};
+// 		REQUIRE(actual == expected);
+// 		REQUIRE(t.level_count() == 3);
+// 	};
+// 	SECTION("One Child"){
+// 		vector<string> ids = {"00000004","00000002","00000001","00000005"};
+// 		AVL t;
+// 		for (string i : ids){
+// 			t.insert("a", i);
+// 		}
+// 		t.remove("00000002");
+// 		vector<string> actual = t.inorder();
+// 		vector<string> expected = {"00000001","00000004","00000005"};
+// 		REQUIRE(actual == expected);
+// 		REQUIRE(t.level_count() == 2);
+// 	};
+// 	SECTION("Two Children"){
+// 		vector<string> ids = {"00000004","00000002","00000006","00000001",
+// 								"00000003","00000005","00000007"};
+// 		AVL t;
+// 		for (string i : ids){
+// 			t.insert("a", i);
+// 		}
+// 		t.remove("00000004");
+// 		vector<string> actual = t.inorder();
+// 		vector<string> expected = {"00000001","00000002","00000003","00000005",
+// 									"00000006","00000007"};
+// 		REQUIRE(actual == expected);
+// 		REQUIRE(t.level_count() == 3);
+// 	};
+// }
 
-// You must write 5 unique, meaningful tests for credit on the testing section
-// of this project!
+// TEST_CASE("5 - Large Insertions","[insert][remove_inorder][inorder]"){
+// 	AVL tree;
+// 	vector<string> expected, actual;
 
-// See the following for an example of how to easily test your output.
-// Note that while this works, I recommend also creating plenty of unit tests for particular functions within your code.
-// This pattern should only be used for final, end-to-end testing.
+// 	// insert 100 nodes
+// 	for (int i=0;i<100;i++){
+// 		int input = (rand() % 90000000) + 10000000;	//random 8-digit number
+// 		string id = to_string(input);
+// 		if (count(expected.begin(),expected.end(),id) == 0){	//not already in vector
+// 			if (tree.insert("a", id)) {   //successful insert
+// 				expected.push_back(id);
+// 			}
+// 		}
+// 	}
 
-// This uses C++ "raw strings" and assumes your CampusCompass outputs a string with
-//   the same thing you print.
-TEST_CASE("Example CampusCompass Output Test", "[flag]") {
-  // the following is a "raw string" - you can write the exact input (without
-  //   any indentation!) and it should work as expected
-  // this is based on the input and output of the first public test case
-  string input = R"(6
-insert "Student A" 10000001 1 1 COP3502
-insert "Student B" 10000002 1 1 COP3502
-insert "Student C" 10000003 1 2 COP3502 MAC2311
-dropClass 10000001 COP3502
-remove 10000001
-removeClass COP3502
-)";
+// 	// remove 10 nodes
+// 	sort(expected.begin(), expected.end());
+// 	for (int i=0;i<10;i++){
+// 		tree.remove_inorder(0);
+// 		expected.erase(expected.begin());
+// 	}
 
-  string expectedOutput = R"(successful
-successful
-successful
-successful
-unsuccessful
-2
-)";
-
-  string actualOutput;
-
-  // somehow pass your input into your CampusCompass and parse it to call the
-  // correct functions, for example:
-  /*
-  CampusCompass c;
-  c.parseInput(input)
-  // this would be some function that sends the output from your class into a string for use in testing
-  actualOutput = c.getStringRepresentation()
-  */
-
-  REQUIRE(actualOutput == expectedOutput);
-}
+// 	// check equivalence
+// 	actual = tree.inorder();
+// 	REQUIRE(expected.size() == actual.size());
+// 	REQUIRE(expected == actual);
+// }

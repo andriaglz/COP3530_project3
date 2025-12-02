@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "CampusCompass.h"
-
 using namespace std;
 
 int main() {
@@ -9,7 +8,7 @@ int main() {
     CampusCompass compass;
 
     // ingest CSV data
-    compass.ParseCSV("../data/edges.csv", "../data/classes.csv");
+    cout << boolalpha << compass.ParseCSV("../data/edges.csv", "../data/classes.csv") << endl;
 
     // the below is example code for parsing commandline input
     int no_of_lines;
@@ -21,7 +20,7 @@ int main() {
         getline(cin, command);
 
         // parse your commands however you see fit
-        cout << compass.ParseCommand(command);
+        cout << boolalpha << compass.ParseCommand(command) << endl;
     }
 
     return 0;
