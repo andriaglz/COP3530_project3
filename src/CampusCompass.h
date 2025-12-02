@@ -42,9 +42,11 @@ public:
     bool DropClass(string student_id,string class_code);
     bool ReplaceClass(string student_id, string class_code_1, string class_code_2);
     bool RemoveClass(string class_code);
-    bool ToggleEdgesClosure(int n,vector<pair<string,string>> location_pairs);
+    int FindEdgeIndex(string from,string to);       //helper
+    bool ToggleEdgesClosure(vector<pair<string,string>> location_pairs);
     bool CheckEdgeStatus(string location_1,string location_2);
     bool IsConnected(string location_1,string location_2);
+    int ShortestPath(string start, string end);     //helper
     bool PrintShortestEdges(string student_id);
     bool PrintStudentZone(string student_id);
     bool VerifySchedule(string student_id);

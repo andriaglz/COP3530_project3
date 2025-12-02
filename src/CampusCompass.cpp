@@ -339,7 +339,20 @@ bool CampusCompass::RemoveClass(string class_code){
     class_directory.erase(class_code);
     return true;
 }
-bool CampusCompass::ToggleEdgesClosure(int n,vector<pair<string,string>> location_pairs){
+// helper
+int CampusCompass::FindEdgeIndex(string from,string to){
+    // find the "to" node and update the weight to be negative
+    vector<pair<string,int>> outgoing = graph[from];
+    int idx = 0;
+    for (pair<string,int> p : outgoing){
+        if (p.first == to){
+            return idx;
+        }
+        idx++;
+    }
+    return -1;  //edge not found
+}
+bool CampusCompass::ToggleEdgesClosure(vector<pair<string,string>> location_pairs){
     /*
     Toggles the closure (soft delete) of N different edges.
     Note: These edges are not being removed from the graph. It is simply closed until toggled back on.
@@ -349,6 +362,12 @@ bool CampusCompass::ToggleEdgesClosure(int n,vector<pair<string,string>> locatio
     You will always be given valid edges in this method.
     prints  “successful” on completion.
     */
+    // close edges that are already open and open edges that are already closed
+    for (pair<string,string> p : location_pairs){
+        // find the "to" node and update weight to negative
+        int edge_idx = FindEdgeIndex(p.first,p.second);
+        graph[p.first][edge_idx].second *= -1;
+    }
     return true;
 }
 bool CampusCompass::CheckEdgeStatus(string location_1,string location_2){
@@ -356,20 +375,95 @@ bool CampusCompass::CheckEdgeStatus(string location_1,string location_2){
     Checks whether a given edge is open, closed, or does not exist.
     Prints “open” “closed” or “DNE” accordingly.
     */
+    int edge_idx = FindEdgeIndex(location_1,location_2);
+    if (edge_idx == -1){
+        // edge not found
+        cout << "DNE" << endl;
+        return true;
+    }
+
+    int weight = graph[location_1][edge_idx].second;
+    if (weight < 0)
+        cout << "open" << endl;
+    else
+        cout << "closed" << endl;
     return true;
 }
+
 bool CampusCompass::IsConnected(string location_1,string location_2){
     /*
-    Checks if it's possible to travel between LOCATION_ID_1 and LOCATION_ID_2 using any of the available edges.
+    Checks if it's possible to travel between LOCATION_ID_1 and LOCATION_ID_2 
+        using any of the available edges.
     Prints “successful” if there is a path and “unsuccessful” if not.
     */
-    return true;
+    // DFS for s-t path (determining if location_2 is reachable from location_1)
+    set<string> visited;
+    stack<string> stk;
+    visited.insert(location_1);
+    stk.push(location_1);
+    while(!stk.empty()){
+        string u = stk.top();
+        stk.pop();
+        for (auto v : graph[u]){
+            string v_node = v.first;
+            if (v_node == location_2)
+                return true;
+            if(visited.find(v_node) == visited.end()){
+                visited.insert(v_node);
+                stk.push(v_node);
+            }
+        }
+    }
+    return false;
 }
+
+int CampusCompass::ShortestPath(string s, string end){
+    // Dijkstra's algorithm for shortest path problem
+    // initialize S with the start vertex, s, and V-S with the remaining vertices.
+    set<string> S,V_S;
+    map<string,string> p;
+    map<string,int> d;
+    const int INF = 10000000000000;
+    S.insert(s);
+    for (auto l : locations){
+        V_S.insert(l.first);
+    }
+    V_S.erase(s);
+
+    // for all v in V-S
+    for (string v : V_S){
+        // set p[v] to s
+        p[v] = s;
+        // if there is an edge (s,v)
+        int edge_idx = FindEdgeIndex(s,v);
+        if (edge_idx != -1)
+            // set d[v] to w(s,v)
+            d[v] = graph[s][edge_idx].second;
+        // else
+        else
+            // set d[v] to infinity 
+            d[v] = INF;
+
+    }
+    // while V-S is not empty
+    while (!V_S.empty()){
+        // for all u in V-S, find the smallest d[u]
+        // remove u from V-S and add u to S
+        // for all v adjacent to u in V-S
+            // if d[u]+w(u,v) is less than d[v]
+                // set d[v] to d[u] + w(u,v)
+                // set p[v] to u
+    }
+    return -1;
+}
+
 bool CampusCompass::PrintShortestEdges(string student_id){
     /*
-    Prints the shortest walking time from a student's residence to each of their classes using only currently available edges.
+    Prints the shortest walking time from a student's residence to each of their classes using only 
+        currently available edges.
     You will be given a valid student ID
-    Note: This does not take into account the start/end time of the classes. Just the time it takes to get to them using available edges.
+    Note: This does not take into account the start/end time of the classes. 
+        Just the time it takes to get to them using available edges.
     Output should include the route for each class:
     Name: [Student Name]
     [ClassCode1] | Total Time: [Time]
@@ -418,7 +512,6 @@ bool CampusCompass::ProcessCommand(const string &command){
     istringstream input_stream(command);
     string keyword, student_id, class_code;
     input_stream >> keyword;
-
     // extract necessary arguments and call respective functions
     if (keyword == "insert"){
         // insert STUDENT_NAME STUDENT_ID RESIDENCE_LOCATION_ID N CLASSCODE_1 CLASSCODE_2 … CLASSCODE_N
@@ -461,7 +554,7 @@ bool CampusCompass::ProcessCommand(const string &command){
             input_stream >> location_1 >> location_2;
             location_pairs.push_back(make_pair(location_1,location_2));
         }
-        return ToggleEdgesClosure(n,location_pairs);
+        return ToggleEdgesClosure(location_pairs);
     } else if (keyword == "checkEdgeStatus"){
         // checkEdgeStatus LOCATION_ID_X LOCATION_ID_Y	
         string location_1,location_2;
