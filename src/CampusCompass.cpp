@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <stack>
 using namespace std;
 
 // helper functions
@@ -417,13 +418,13 @@ bool CampusCompass::IsConnected(string location_1,string location_2){
     return false;
 }
 
-int CampusCompass::ShortestPath(string s, string dest){
+pair<int,stack<string>> CampusCompass::ShortestPath(string s, string dest){
     // Dijkstra's algorithm for shortest path problem
     // initialize S with the start vertex, s, and V-S with the remaining vertices.
     set<string> S,V_S;      //visited and nonvisited sets
     map<string,string> p;   //predecessors
     map<string,int> d;      //distances from source
-    const int INF = 10000000000000;
+    // const int INF = 10000000000000;
     S.insert(s);
     for (auto l : locations){
         V_S.insert(l.first);
@@ -470,11 +471,22 @@ int CampusCompass::ShortestPath(string s, string dest){
             }  
         }
     }
-    // return the shortest distance from s to dest
+    // shortest path
+    stack<string> shortest_path;
+    string prev = dest;
+    while (p[prev] != "")
+        shortest_path.push(prev);
+        prev = p[prev];
+    shortest_path.push(s);
+
+    // shortest distance
+    int shortest_distance;
     if (d[dest] == INF)
-        return -1;  //unreachable
+        shortest_distance = -1;  //unreachable
     else
-        return d[dest];
+        shortest_distance = d[dest];
+    
+    return make_pair(shortest_distance,shortest_path);
 }
 
 bool CampusCompass::PrintShortestEdges(string student_id){
@@ -497,17 +509,61 @@ bool CampusCompass::PrintShortestEdges(string student_id){
     cout << "Name: " << s.student_name << endl;
     for (string class_code : s.class_codes){
         string class_location_id = class_directory[class_code].location_id;
-        int shortest_distance = ShortestPath(s.residence_location_id, class_location_id);
+        int shortest_distance = ShortestPath(s.residence_location_id, class_location_id).first;
         cout << class_code << " | " << "Total Time: " << shortest_distance << endl;
     }
     return true;
 }
+
+map<string,vector<pair<string,int>>> CampusCompass::GetMST(map<string,vector<pair<string,int>>> subgraph,set<string> vertices){
+    // Prim's algorithm for minimum spanning tree
+    /*
+    pseudocode
+    create an empty set
+    put an arbitrary starting node in the set
+    while your set does not contain all vertices of the graph
+        add an adjacent vertex
+            with least edge weight to any edge in the set
+            is not in the set already
+    */
+    set<string> V,V_S;  
+    map<string,vector<pair<string,int>>> mst; 
+
+    // add all vertices to V_S
+    V_S = vertices;
+
+    // add an arbitrary node to S
+    V.insert(*V_S.begin());
+
+    while (!V_S.empty()){
+        // find least edge weight that is open and not in S
+        int least_weight = INF;
+        string from,to;
+        for (string v : V){
+            for (auto p : graph[v]){
+                int w = p.second;
+                if (w >= 0 && w < least_weight){
+                    least_weight = w;
+                    from = v;
+                    to = p.first;
+                }
+            }
+        }
+        // add to mst and update sets
+        mst[from].push_back(make_pair(to,least_weight));
+        V_S.erase(to);
+        V.insert(to);
+    }
+    return mst;
+}
+
 bool CampusCompass::PrintStudentZone(string student_id){
     /*
     A student’s “zone” is the minimum-cost set of edges required to connect their residence and all their classes' locations, based on their shortest-path routes.
     You will be given a valid student ID
     To calculate this, you must:
-    First: find the shortest path from the student’s residence to each of their classes using only currently accessible edges (Note: this is the same functionality as your printShortestEdges command). 
+    First: find the shortest path from the student’s residence to each of their classes using only currently accessible edges 
+        (Note: this is the same functionality as your printShortestEdges command). 
     Second, create a sub-graph that contains all the vertices from all of those paths. Remaining edges must connect two nodes within this set of vertices.
     Third, get the minimum spanning tree of this sub-graph. This is the “Student Zone.”
     The output should be the total cost of this MST.
@@ -515,16 +571,65 @@ bool CampusCompass::PrintStudentZone(string student_id){
     Output Format:
     Student Zone Cost For [Student Name]: X
     */
+    Student s = student_directory[student_id];
+
+    // find the shortest path from residence to each of the classes using only currently accessible edges
+    vector<stack<string>> shortest_paths;
+    for (string class_code : s.class_codes){
+        string class_location_id = class_directory[class_code].location_id;
+        stack<string> shortest_path = ShortestPath(s.residence_location_id,class_location_id).second;
+        shortest_paths.push_back(shortest_path);
+    }
+    
+    // create a sub-graph that contains all vertices from all the shortest paths
+    map<string,vector<pair<string,int>>> subgraph;
+    set<string> vertices;
+    for (stack<string> stk : shortest_paths){
+        while (!stk.empty()){
+            string from = stk.top();
+            vertices.insert(from);
+            stk.pop();
+            string to = stk.top();
+            int edge_idx = FindEdgeIndex(from,to);
+            int w = graph[from][edge_idx].second;
+            subgraph[from].push_back(make_pair(to,w));
+        }
+    }
+
+    // get MST of the sub-graph
+    map<string,vector<pair<string,int>>> mst = GetMST(subgraph,vertices);
+
+    // print the total cost of the MST
+    int total_cost = 0;
+    set<string> added_edges;
+    string from,to;
+    for (auto p_1 : mst){
+        from = p_1.first;
+        for (auto p_2 : mst[from]){
+            to = p_2.first;
+            if (added_edges.find(from+to) != added_edges.end()){
+                total_cost+=p_2.second;
+                added_edges.insert(from+to);
+                added_edges.insert(to+from);
+            }
+        }
+    }
+    // Student Zone Cost For [Student Name]: X
+    cout << "Student Zone Cost For " << s.student_name << ": " << total_cost << endl;
+
     return true;
 }
+
 bool CampusCompass::VerifySchedule(string student_id){
     /*
     A student's schedule is only feasible if they can physically get from one class to the next in the allotted time.
-    For example, if COP3530 is from 10:40-11:30 and CDA3101 is from 11:45-12:35, but the shortest path from COP3530 to CDA3101 takes longer than 15 minutes, then the schedule is not feasible.
+    For example, if COP3530 is from 10:40-11:30 and CDA3101 is from 11:45-12:35, but the shortest path from 
+        COP3530 to CDA3101 takes longer than 15 minutes, then the schedule is not feasible.
     Note: the shortest path must use only available edges.
     If the Time Gap between the classes is longer than or equal to the shortest path, we output “Can make it!”
     If the Time Gap between the classes is shorter than the shortest path, we print “Cannot make it!”
-    In the output, the classes should be organized from the earliest start time to the latest start time, and you are checking the Time Gap between consecutive classes.
+    In the output, the classes should be organized from the earliest start time to the latest start time, 
+        and you are checking the Time Gap between consecutive classes.
     If a student has only 1 class, print “unsuccessful” otherwise, print:
     Schedule Check for [Student Name]:
     [ClassCode1] - [ClassCode2] "Can make it!"
