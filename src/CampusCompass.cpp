@@ -10,7 +10,7 @@ using namespace std;
 const int INF = 1000000000;
 
 // helper functions
-bool is_in(string target_item, vector<string> items){
+bool CampusCompass::is_in(string target_item, vector<string> items){
     for (string item : items){
         if (item == target_item){
             return true;
@@ -327,7 +327,7 @@ bool CampusCompass::ReplaceClass(string student_id, string class_code_1, string 
     class_directory[class_code_2].students_enrolled.insert(student_id);
     return true;
 }
-bool CampusCompass::RemoveClass(string class_code){
+int CampusCompass::RemoveClass(string class_code){
     /*
     Removes a class CLASSCODE from the schedule for all students.
     Note: If we remove a CLASSCODE from a student with only that CLASSCODE and the student has 0 classes, 
@@ -345,7 +345,7 @@ bool CampusCompass::RemoveClass(string class_code){
     cout << students_dropped << endl;
     // remove class from class directory
     class_directory.erase(class_code);
-    return true;
+    return students_dropped;
 }
 // helper
 int CampusCompass::FindEdgeIndex(string from,string to){
@@ -653,6 +653,8 @@ bool CampusCompass::VerifySchedule(string student_id){
     [ClassCode1] - [ClassCode2] "Can make it!"
     [ClassCode2] - [ClassCode3] "Cannot make it!"
     */
+    // order schedule by time
+
     return true;
 }
 
@@ -663,7 +665,7 @@ bool CampusCompass::ProcessCommand(const string &command){
     string keyword, student_id, class_code;
     input_stream >> keyword;
     // extract necessary arguments and call respective functions
-    bool success;
+    bool success = true;
     if (keyword == "insert"){
         // insert STUDENT_NAME STUDENT_ID RESIDENCE_LOCATION_ID N CLASSCODE_1 CLASSCODE_2 … CLASSCODE_N
         string name,id,residence_id,n_str;
@@ -692,7 +694,7 @@ bool CampusCompass::ProcessCommand(const string &command){
     } else if (keyword == "removeClass"){
         // removeClass CLASSCODE
         input_stream >> class_code;
-        return RemoveClass(class_code);
+        RemoveClass(class_code);
     } else if (keyword == "toggleEdgesClosure"){
         // toggleEdgesClosure N LOCATION_ID_X LOCATION_ID_Y ... LOCATION_ID_A LOCATION_ID_B	
         string n_str;
@@ -739,4 +741,13 @@ bool CampusCompass::ProcessCommand(const string &command){
         cout << "unsuccessful" << endl;
         return false;
     }
+}
+
+
+vector<string> CampusCompass::GetStudentDirectory(){
+    vector<string> student_ids;
+    for (auto p : student_directory){
+        student_ids.push_back(p.first);
+    }
+    return student_ids;
 }

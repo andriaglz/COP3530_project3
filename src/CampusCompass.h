@@ -42,7 +42,7 @@ public:
     bool Remove(string student_id);
     bool DropClass(string student_id,string class_code);
     bool ReplaceClass(string student_id, string class_code_1, string class_code_2);
-    bool RemoveClass(string class_code);
+    int RemoveClass(string class_code);
     int FindEdgeIndex(string from,string to);                                                               //helper
     bool ToggleEdgesClosure(vector<pair<string,string>> location_pairs);
     bool CheckEdgeStatus(string location_1,string location_2);
@@ -52,4 +52,8 @@ public:
     map<string,vector<pair<string,int>>> GetMST(map<string,vector<pair<string,int>>> subgraph,set<string> vertices); //helper
     bool PrintStudentZone(string student_id);
     bool VerifySchedule(string student_id);
+
+    // test validation functions
+    vector<string> GetStudentDirectory();
+    bool is_in(string target_item, vector<string> items);
 };
