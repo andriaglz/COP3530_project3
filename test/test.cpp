@@ -57,8 +57,9 @@ TEST_CASE("2 - Edge Cases"){
         REQUIRE(!c.ParseCommand("remove 22222222"));
     }
     SECTION("3 - IsConnected"){
+        // NEEDS IMPROVEMENT
         string valid_command = "isConnected 1 2";
-        REQUIRE(c.ParseCommand(valid_command));///////
+        REQUIRE(c.ParseCommand(valid_command));
         REQUIRE(c.ProcessCommand(valid_command));
     }
 }

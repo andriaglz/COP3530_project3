@@ -447,13 +447,15 @@ pair<int,stack<string>> CampusCompass::ShortestPath(string s, string dest){
 
     // for all v in V-S
     for (string v : V_S){
-        // set p[v] to s
-        p[v] = s;
         // if there is an edge (s,v)
         int edge_idx = FindEdgeIndex(s,v);
-        if (edge_idx != -1)
+        int w = graph[s][edge_idx].second;
+        if (edge_idx != -1 && w >= 0) {
+            // set p[v] to s
+            p[v] = s;
             // set d[v] to w(s,v)
-            d[v] = graph[s][edge_idx].second;
+            d[v] = w;
+        }
         // else
         else
             // set d[v] to infinity 
@@ -555,6 +557,7 @@ map<string, vector<pair<string,int>>> CampusCompass::GetMST(map<string, vector<p
 
     // add an arbitrary node to S
     V.insert(*V_S.begin());
+    V_S.erase(*V_S.begin());
 
     while (!V_S.empty()){
         // find least edge weight that is open and not in S
@@ -563,7 +566,7 @@ map<string, vector<pair<string,int>>> CampusCompass::GetMST(map<string, vector<p
         for (string v : V){
             for (auto p : subgraph[v]){
                 int w = p.second;
-                if (w >= 0 && w < least_weight){
+                if (V.find(p.first) == V.end() && w >= 0 && w < least_weight){
                     least_weight = w;
                     from = v;
                     to = p.first;
@@ -630,7 +633,7 @@ bool CampusCompass::PrintStudentZone(string student_id){
         from = p_1.first;
         for (auto p_2 : mst[from]){
             to = p_2.first;
-            if (added_edges.find(from+to) != added_edges.end()){
+            if (added_edges.find(from+to) == added_edges.end()){
                 total_cost+=p_2.second;
                 added_edges.insert(from+to);
                 added_edges.insert(to+from);
