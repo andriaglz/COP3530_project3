@@ -57,10 +57,20 @@ TEST_CASE("2 - Edge Cases"){
         REQUIRE(!c.ParseCommand("remove 22222222"));
     }
     SECTION("3 - IsConnected"){
-        // NEEDS IMPROVEMENT
+        // command parsing
         string valid_command = "isConnected 1 2";
         REQUIRE(c.ParseCommand(valid_command));
         REQUIRE(c.ProcessCommand(valid_command));
+        // direct tests
+        REQUIRE(c.IsConnected("1","2"));
+        REQUIRE(c.IsConnected("2","1"));
+        REQUIRE(c.IsConnected("1","14"));
+        REQUIRE(c.IsConnected("1","1"));
+        REQUIRE(c.IsConnected("19","16"));
+        // edge closure
+        vector<pair<string,string>> toggle_edges = {make_pair("5","7")};
+        REQUIRE(c.ToggleEdgesClosure(toggle_edges));
+        REQUIRE(c.IsConnected("5","7"));  
     }
 }
 

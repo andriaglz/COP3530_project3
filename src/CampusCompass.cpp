@@ -406,6 +406,10 @@ bool CampusCompass::IsConnected(string location_1,string location_2){
         using any of the available edges.
     Prints “successful” if there is a path and “unsuccessful” if not.
     */
+    // every node is connected to itself
+    if (location_1 == location_2){
+        return true;
+    }
     // DFS for s-t path (determining if location_2 is reachable from location_1)
     set<string> visited;
     stack<string> stk;
