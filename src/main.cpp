@@ -6,11 +6,16 @@ using namespace std;
 int main() {
     // initialize your main project object
     CampusCompass compass;
+    bool success;
 
     // ingest CSV data
-    cout << boolalpha << compass.ParseCSV("../data/edges.csv", "../data/classes.csv") << endl;
+    success = compass.ParseCSV("../data/edges.csv", "../data/classes.csv");
+    if (!success) {
+        cout << "Error parsing csv files" << endl;
+        return 0;
+    }
 
-    // the below is example code for parsing commandline input
+    // parse commandline input
     int no_of_lines;
     string command;
     cin >> no_of_lines;
@@ -19,8 +24,15 @@ int main() {
     for (int i = 0; i < no_of_lines; i++) {
         getline(cin, command);
 
-        // parse your commands however you see fit
-        cout << boolalpha << compass.ParseCommand(command) << endl;
+        // parse your commands and validate input
+        success = compass.ParseCommand(command);
+        if (!success){
+            cout << "unsuccessful" << endl;
+            continue;
+        }
+
+        // process validated command
+        compass.ProcessCommand(command);
     }
 
     return 0;

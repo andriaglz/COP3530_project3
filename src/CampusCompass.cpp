@@ -74,8 +74,9 @@ bool CampusCompass::ParseCSV(const string &edges_filepath, const string &classes
         if (locations.find(id_2) == locations.end())
             locations[id_2] = name_2;
         
-        // add edge to graph
+        // add edge to graph in both directions
         graph[id_1].push_back(make_pair(id_2,stoi(time)));
+        graph[id_2].push_back(make_pair(id_1,stoi(time)));
     }
 
     // classes file
@@ -97,7 +98,7 @@ bool CampusCompass::ParseCSV(const string &edges_filepath, const string &classes
         // cout << class_code << ", " << class_info.location_id << ", " << class_info.start_time << ", " << class_info.end_time << endl;
 
         // validate time formatting
-        if (!(class_info.start_time[2]==':') || !(class_info.end_time[2]==':')){
+        if (class_info.start_time[2]!=':' || class_info.end_time[2]!=':'){
             cout << "Error: Incorrectly parsed start and end time" << endl;
             return false;
         }
@@ -175,7 +176,7 @@ bool CampusCompass::ParseCommand(const string &command) {
     // student id commands
     if (is_in(keyword,{"remove","dropClass","replaceClass"})){
         // validate student id
-        if (!(student_directory.find(argument_1) == student_directory.end()))
+        if (student_directory.find(argument_1) == student_directory.end())
             // student id must be present in the directory
             return false;
         
@@ -335,9 +336,13 @@ bool CampusCompass::RemoveClass(string class_code){
     E.g., if 4 students were enrolled in COP3530 then “removeClass COP3530” would print "4".
     */
     // remove all students from this class
-    for (string student_id : class_directory[class_code].students_enrolled){
+    int students_dropped = class_directory[class_code].students_enrolled.size();
+    set<string> students_enrolled = class_directory[class_code].students_enrolled;
+    for (string student_id : students_enrolled){
         DropClass(student_id,class_code);
     }
+    // print number of students the class was dropped from
+    cout << students_dropped << endl;
     // remove class from class directory
     class_directory.erase(class_code);
     return true;
@@ -387,9 +392,9 @@ bool CampusCompass::CheckEdgeStatus(string location_1,string location_2){
 
     int weight = graph[location_1][edge_idx].second;
     if (weight < 0)
-        cout << "open" << endl;
+        cout << "close" << endl;
     else
-        cout << "closed" << endl;
+        cout << "open" << endl;
     return true;
 }
 
@@ -426,8 +431,10 @@ pair<int,stack<string>> CampusCompass::ShortestPath(string s, string dest){
     set<string> S,V_S;      //visited and nonvisited sets
     map<string,string> p;   //predecessors
     map<string,int> d;      //distances from source
-    // const int INF = 10000000000000;
+
     S.insert(s);
+    d[s] = 0;
+    p[s] = "";
     for (auto l : locations){
         V_S.insert(l.first);
     }
@@ -452,10 +459,16 @@ pair<int,stack<string>> CampusCompass::ShortestPath(string s, string dest){
     while (!V_S.empty()){
         // for all u in V-S, find the smallest d[u]
         int shortest_distance = INF;
-        string u;
+        string u = "";
         for (string node : V_S){
-            if (d[node] < shortest_distance)
+            if (d[node] < shortest_distance){
+                shortest_distance = d[node];
                 u = node;
+            }
+        }
+        // if all nodes are unreachable
+        if (shortest_distance == INF){
+            break;
         }
         // remove u from V-S and add u to S
         V_S.erase(u);
@@ -476,9 +489,10 @@ pair<int,stack<string>> CampusCompass::ShortestPath(string s, string dest){
     // shortest path
     stack<string> shortest_path;
     string prev = dest;
-    while (p[prev] != "")
+    while (p[prev] != ""){
         shortest_path.push(prev);
         prev = p[prev];
+    }
     shortest_path.push(s);
 
     // shortest distance
@@ -591,10 +605,12 @@ bool CampusCompass::PrintStudentZone(string student_id){
             string from = stk.top();
             vertices.insert(from);
             stk.pop();
-            string to = stk.top();
-            int edge_idx = FindEdgeIndex(from,to);
-            int w = graph[from][edge_idx].second;
-            subgraph[from].push_back(make_pair(to,w));
+            if (!stk.empty()){
+                string to = stk.top();
+                int edge_idx = FindEdgeIndex(from,to);
+                int w = graph[from][edge_idx].second;
+                subgraph[from].push_back(make_pair(to,w));
+            }
         }
     }
 
@@ -647,6 +663,7 @@ bool CampusCompass::ProcessCommand(const string &command){
     string keyword, student_id, class_code;
     input_stream >> keyword;
     // extract necessary arguments and call respective functions
+    bool success;
     if (keyword == "insert"){
         // insert STUDENT_NAME STUDENT_ID RESIDENCE_LOCATION_ID N CLASSCODE_1 CLASSCODE_2 … CLASSCODE_N
         string name,id,residence_id,n_str;
@@ -658,20 +675,20 @@ bool CampusCompass::ProcessCommand(const string &command){
             input_stream >> class_code;
             class_codes.insert(class_code);
         }
-        return Insert(name,id,residence_id,class_codes);
+        success = Insert(name,id,residence_id,class_codes);
     } else if (keyword == "remove"){
         // remove STUDENT_ID
         input_stream >> student_id;
-        return Remove(student_id);
+        success = Remove(student_id);
     } else if (keyword == "dropClass"){
         // dropClass STUDENT_ID CLASSCODE
         input_stream >> student_id >> class_code;
-        return DropClass(student_id,class_code);
+        success = DropClass(student_id,class_code);
     } else if (keyword == "replaceClass"){
         // replaceClass STUDENT_ID CLASSCODE_1 CLASSCODE_2	
         string class_code_2;
         input_stream >> student_id >> class_code >> class_code_2;
-        return ReplaceClass(student_id, class_code, class_code_2);
+        success = ReplaceClass(student_id, class_code, class_code_2);
     } else if (keyword == "removeClass"){
         // removeClass CLASSCODE
         input_stream >> class_code;
@@ -688,7 +705,7 @@ bool CampusCompass::ProcessCommand(const string &command){
             input_stream >> location_1 >> location_2;
             location_pairs.push_back(make_pair(location_1,location_2));
         }
-        return ToggleEdgesClosure(location_pairs);
+        success = ToggleEdgesClosure(location_pairs);
     } else if (keyword == "checkEdgeStatus"){
         // checkEdgeStatus LOCATION_ID_X LOCATION_ID_Y	
         string location_1,location_2;
@@ -698,7 +715,7 @@ bool CampusCompass::ProcessCommand(const string &command){
         // isConnected LOCATION_ID_1 LOCATION_ID_2	
         string location_1,location_2;
         input_stream >> location_1 >> location_2;
-        return IsConnected(location_1,location_2);
+        success = IsConnected(location_1,location_2);
     } else if (keyword == "printShortestEdges"){
         // printShortestEdges ID
         input_stream >> student_id;
@@ -713,6 +730,13 @@ bool CampusCompass::ProcessCommand(const string &command){
         return VerifySchedule(student_id);
     } else {
         // invalid keyword
+        return false;
+    }
+    if (success){
+        cout << "successful" << endl;
+        return true;
+    } else {
+        cout << "unsuccessful" << endl;
         return false;
     }
 }
