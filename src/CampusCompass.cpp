@@ -372,9 +372,11 @@ bool CampusCompass::ToggleEdgesClosure(vector<pair<string,string>> location_pair
     */
     // close edges that are already open and open edges that are already closed
     for (pair<string,string> p : location_pairs){
-        // find the "to" node and update weight to negative
-        int edge_idx = FindEdgeIndex(p.first,p.second);
-        graph[p.first][edge_idx].second *= -1;
+        // find the to node and update weight to negative
+        int edge_idx_1 = FindEdgeIndex(p.first,p.second);
+        graph[p.first][edge_idx_1].second *= -1;
+        int edge_idx_2 = FindEdgeIndex(p.second,p.first);
+        graph[p.second][edge_idx_2].second *= -1;
     }
     return true;
 }
@@ -414,6 +416,9 @@ bool CampusCompass::IsConnected(string location_1,string location_2){
         stk.pop();
         for (auto v : graph[u]){
             string v_node = v.first;
+            if (v.second < 0)
+                // edge is closed
+                continue;
             if (v_node == location_2)
                 return true;
             if(visited.find(v_node) == visited.end()){

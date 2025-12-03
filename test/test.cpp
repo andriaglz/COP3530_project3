@@ -9,6 +9,7 @@ using namespace std;
 TEST_CASE("1 - Incorrect Commands"){
     // Test at least five incorrect commands. Ex: insert "A11y" 45679999 1 1 COP3530
     CampusCompass c;
+    REQUIRE(c.ParseCSV("../data/edges.csv", "../data/classes.csv"));
     SECTION("1 - Insert"){
         // insert STUDENT_NAME STUDENT_ID RESIDENCE_LOCATION_ID N CLASSCODE_1 CLASSCODE_2 … CLASSCODE_N
         // The STUDENT_ID must be unique.
@@ -43,10 +44,11 @@ TEST_CASE("1 - Incorrect Commands"){
 TEST_CASE("2 - Edge Cases"){
     // Test at least three edge cases for various functions. Ex: removing a student that doesn’t exist 
     CampusCompass c;
+    REQUIRE(c.ParseCSV("../data/edges.csv", "../data/classes.csv"));
     SECTION("1 - Insert"){
         // student id not unique
         string valid_command = "insert \"name\" 12345678 1 1 COP3530";
-        REQUIRE(c.ParseCommand(valid_command));
+        REQUIRE(c.ParseCommand(valid_command));////
         REQUIRE(c.ProcessCommand(valid_command));
         REQUIRE(!c.ParseCommand(valid_command));
     }
@@ -56,7 +58,7 @@ TEST_CASE("2 - Edge Cases"){
     }
     SECTION("3 - IsConnected"){
         string valid_command = "isConnected 1 2";
-        REQUIRE(c.ParseCommand(valid_command));
+        REQUIRE(c.ParseCommand(valid_command));///////
         REQUIRE(c.ProcessCommand(valid_command));
     }
 }
@@ -64,6 +66,7 @@ TEST_CASE("2 - Edge Cases"){
 TEST_CASE("3 - Class Commands"){
     // Test your dropClass, removeClass, remove, and replaceClass commands
     CampusCompass c;
+    REQUIRE(c.ParseCSV("../data/edges.csv", "../data/classes.csv"));
     string student_name = "andria";
     string student_id = "35724957";
     string residence_id = "1";
@@ -98,6 +101,7 @@ TEST_CASE("4 - Print Shortest Edges"){
     //  then one or more edges turn off, and then they cannot reach that class. 
     // (Hint: the visualizer tool can help with this a lot)
     CampusCompass c;
+    REQUIRE(c.ParseCSV("../data/edges.csv", "../data/classes.csv"));
     string student_name = "andria";
     string student_id = "35724957";
     string residence_id = "19";
