@@ -650,6 +650,12 @@ bool CampusCompass::PrintStudentZone(string student_id){
     return true;
 }
 
+int get_minutes(string hh_mm){
+    int hour = stoi(hh_mm.substr(0,2));
+    int min = hour*60 + stoi(hh_mm.substr(3,2));
+    return min;
+}
+
 bool CampusCompass::VerifySchedule(string student_id){
     /*
     A student's schedule is only feasible if they can physically get from one class to the next in the allotted time.
@@ -665,9 +671,42 @@ bool CampusCompass::VerifySchedule(string student_id){
     [ClassCode1] - [ClassCode2] "Can make it!"
     [ClassCode2] - [ClassCode3] "Cannot make it!"
     */
+    set<string> class_codes = student_directory[student_id].class_codes;
+    bool success = true;
+    if (class_codes.size() <= 1){
+        return false;
+    }
     // order schedule by time
-
-    return true;
+    // sort classes by start times
+    set<pair<string,string>> sorted_classes; 
+    for (string class_code : class_codes){
+        sorted_classes.insert(make_pair(class_directory[class_code].start_time,class_code));
+    }
+    // determine if the student can make it to each class on time
+    cout << "Schedule Check for " << student_directory[student_id].student_name << ":" << endl;
+    vector<pair<pair<string,string>,pair<string,string>>> class_place_times;  //<<class_code,location_id>, <start_time,end_time>>
+    for (auto p : sorted_classes){
+        Class c = class_directory[p.second];
+        class_place_times.push_back(make_pair(make_pair(p.second,c.location_id),make_pair(c.start_time,c.end_time)));
+    }
+    for (int i=0;i<class_place_times.size()-1;i++){
+        auto curr_class = class_place_times[i];
+        auto future_class = class_place_times[i+1];
+        // find shortest distances
+        int shortest_distance = ShortestPath(curr_class.first.second,future_class.first.second).first;
+        // find time between classes
+        string start = curr_class.second.second;
+        string end = future_class.second.first;
+        int elapsed_minutes = get_minutes(end) - get_minutes(start);
+        cout << curr_class.first.first << " - " << future_class.first.first << " ";
+        if (shortest_distance < elapsed_minutes){
+            cout << "Cannot make it!" << endl;
+            success = false;
+        } else {
+            cout << "Can make it!" << endl;
+        }
+    }
+    return success;
 }
 
 

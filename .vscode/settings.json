@@ -14,6 +14,9 @@
         "__hash_table": "cpp",
         "unordered_map": "cpp",
         "regex": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "__split_buffer": "cpp",
+        "deque": "cpp",
+        "list": "cpp"
     }
 }
