@@ -7,6 +7,8 @@
 #include <stack>
 using namespace std;
 
+const int INF = 1000000000;
+
 // helper functions
 bool is_in(string target_item, vector<string> items){
     for (string item : items){
@@ -515,7 +517,7 @@ bool CampusCompass::PrintShortestEdges(string student_id){
     return true;
 }
 
-map<string,vector<pair<string,int>>> CampusCompass::GetMST(map<string,vector<pair<string,int>>> subgraph,set<string> vertices){
+map<string, vector<pair<string,int>>> CampusCompass::GetMST(map<string, vector<pair<string,int>>> subgraph, set<string> vertices){
     // Prim's algorithm for minimum spanning tree
     /*
     pseudocode
@@ -540,7 +542,7 @@ map<string,vector<pair<string,int>>> CampusCompass::GetMST(map<string,vector<pai
         int least_weight = INF;
         string from,to;
         for (string v : V){
-            for (auto p : graph[v]){
+            for (auto p : subgraph[v]){
                 int w = p.second;
                 if (w >= 0 && w < least_weight){
                     least_weight = w;

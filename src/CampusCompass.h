@@ -6,8 +6,6 @@
 #include <stack>
 using namespace std;
 
-const int INF = 10000000000000;
-
 struct Student {
     // string student_id;
     string student_name;
@@ -51,7 +49,7 @@ public:
     bool IsConnected(string location_1,string location_2);
     pair<int,stack<string>> ShortestPath(string start, string end);                                         //helper
     bool PrintShortestEdges(string student_id);
-    map<string,vector<pair<string,int>>> CampusCompass::GetMST(map<string,vector<pair<string,int>>> subgraph,set<string> vertices); //helper
+    map<string,vector<pair<string,int>>> GetMST(map<string,vector<pair<string,int>>> subgraph,set<string> vertices); //helper
     bool PrintStudentZone(string student_id);
     bool VerifySchedule(string student_id);
 };
