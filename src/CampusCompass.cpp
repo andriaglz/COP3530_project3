@@ -699,7 +699,7 @@ bool CampusCompass::VerifySchedule(string student_id){
         string end = future_class.second.first;
         int elapsed_minutes = get_minutes(end) - get_minutes(start);
         cout << curr_class.first.first << " - " << future_class.first.first << " ";
-        if (shortest_distance < elapsed_minutes){
+        if (shortest_distance > elapsed_minutes || shortest_distance == -1){
             cout << "Cannot make it!" << endl;
             success = false;
         } else {
