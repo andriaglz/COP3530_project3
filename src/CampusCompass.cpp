@@ -10,7 +10,7 @@ using namespace std;
 const int INF = 1000000000;
 
 // helper functions
-bool CampusCompass::is_in(string target_item, vector<string> items){
+bool CampusCompass::IsIn(string target_item, vector<string> items){
     for (string item : items){
         if (item == target_item){
             return true;
@@ -19,11 +19,7 @@ bool CampusCompass::is_in(string target_item, vector<string> items){
     return false;
 }
 
-bool valid_student_id(string id){
-    return true;
-}
-
-bool is_integer(string str){
+bool IsInteger(string str){
     try {
         stoi(str);
         return true;
@@ -32,6 +28,25 @@ bool is_integer(string str){
     }
 }
 
+bool IsValidStudentId(string id){
+    // 8 digits
+    if (id.size() != 8 || !IsInteger(id))
+        return false;
+    return true;
+}
+
+bool ParseName(istringstream& input_stream, string& name){
+    // read in the name (allowing whitespaces)
+    char letter;
+    input_stream >> letter;
+    if (letter != '"')
+        return false;
+    if (!getline(input_stream,name,'"'))
+        return false;
+    if (name.empty())
+        return false;
+    return true;
+}
 
 // CampusCompass functions
 CampusCompass::CampusCompass() {
@@ -63,7 +78,7 @@ bool CampusCompass::ParseCSV(const string &edges_filepath, const string &classes
         getline(ss,name_2,',');
         getline(ss,time,',');
 
-        if (!is_integer(time)){
+        if (!IsInteger(time)){
             cout << "Error: Incorrectly parsed time" << endl;
             return false;
         }
@@ -119,29 +134,27 @@ bool CampusCompass::ParseCommand(const string &command) {
     istringstream input_stream(command);
     string keyword;
     input_stream >> keyword;
-    bool keyword_is_valid = is_in(keyword,valid_keywords);
+    bool keyword_is_valid = IsIn(keyword,valid_keywords);
     if (!keyword_is_valid)
-        return false;
-
-    // input validation for each individual command
-    string argument_1;
-    if (!(input_stream >> argument_1))
-        // all commands have at least 1 argument
         return false;
 
     // insert
     if (keyword == "insert"){
         string name,id,residence_location_id,n_str;
-        name = argument_1;
-
+        // parse name
+        if (!ParseName(input_stream,name))
+            return false;
         // verify number of arguments
         if(!(input_stream>>id>>residence_location_id>>n_str))
             // id,residence_location_id, and n must be provided
             return false;
+        // verify id
+        if (!IsValidStudentId(id))
+            return false;
         // verify n
         int n_int;
         vector<string> class_codes;
-        if (is_integer(n_str))
+        if (IsInteger(n_str))
             n_int = stoi(n_str);
         else
             return false;
@@ -154,9 +167,6 @@ bool CampusCompass::ParseCommand(const string &command) {
         }
 
         // verify input contents
-        // name
-        if (name[0] != '"' && name[name.size()-1] != '"')
-            return false;
         // id
         if (!(student_directory.find(id) == student_directory.end()))
             // student id must be unique
@@ -171,11 +181,20 @@ bool CampusCompass::ParseCommand(const string &command) {
                 // course code must be present in records
                 return false;
         }
+        return true;
     }
 
+    // input validation for each individual command
+    string argument_1;
+    if (!(input_stream >> argument_1))
+        // all commands have at least 1 argument
+        return false;
+
     // student id commands
-    if (is_in(keyword,{"remove","dropClass","replaceClass"})){
+    if (IsIn(keyword,{"remove","dropClass","replaceClass"})){
         // validate student id
+        if (!IsValidStudentId(argument_1))
+            return false;
         if (student_directory.find(argument_1) == student_directory.end())
             // student id must be present in the directory
             return false;
@@ -207,13 +226,13 @@ bool CampusCompass::ParseCommand(const string &command) {
     // removeClass
     if (keyword == "removeClass"){
         if (class_directory.find(argument_1) == class_directory.end())
-            // student id must be present in the directory
+            // class code must be present in the directory
             return false;
     }
 
     // toggleEdgesClosure
     if (keyword == "toggleEdgesClosure"){
-        if (!is_integer(argument_1))
+        if (!IsInteger(argument_1))
             return false;
         int n = stoi(argument_1);
 
@@ -231,7 +250,7 @@ bool CampusCompass::ParseCommand(const string &command) {
     }
 
     // two location commands
-    if (is_in(keyword,{"checkEdgeStatus","isConnected"})){
+    if (IsIn(keyword,{"checkEdgeStatus","isConnected"})){
         vector<string> location_ids;
         location_ids.push_back(argument_1);
         string location_2;
@@ -244,8 +263,10 @@ bool CampusCompass::ParseCommand(const string &command) {
     }
 
     // id commands
-    if (is_in(keyword,{"printShortestEdges","printStudentZone","verifySchedule"})){
+    if (IsIn(keyword,{"printShortestEdges","printStudentZone","verifySchedule"})){
         // validate student id
+        if (!IsValidStudentId(argument_1))
+            return false;
         if (student_directory.find(argument_1) == student_directory.end())
             // student id must be present in the directory
             return false;
@@ -650,7 +671,7 @@ bool CampusCompass::PrintStudentZone(string student_id){
     return true;
 }
 
-int get_minutes(string hh_mm){
+int GetMinutes(string hh_mm){
     int hour = stoi(hh_mm.substr(0,2));
     int min = hour*60 + stoi(hh_mm.substr(3,2));
     return min;
@@ -697,7 +718,7 @@ bool CampusCompass::VerifySchedule(string student_id){
         // find time between classes
         string start = curr_class.second.second;
         string end = future_class.second.first;
-        int elapsed_minutes = get_minutes(end) - get_minutes(start);
+        int elapsed_minutes = GetMinutes(end) - GetMinutes(start);
         cout << curr_class.first.first << " - " << future_class.first.first << " ";
         if (shortest_distance > elapsed_minutes || shortest_distance == -1){
             cout << "Cannot make it!" << endl;
@@ -720,7 +741,9 @@ bool CampusCompass::ProcessCommand(const string &command){
     if (keyword == "insert"){
         // insert STUDENT_NAME STUDENT_ID RESIDENCE_LOCATION_ID N CLASSCODE_1 CLASSCODE_2 … CLASSCODE_N
         string name,id,residence_id,n_str;
-        input_stream >> name >> id >> residence_id >> n_str;
+        if (!ParseName(input_stream,name))
+            return false;
+        input_stream >> id >> residence_id >> n_str;
         int n = stoi(n_str);
         set<string> class_codes;
         for (int i=0;i<n;i++){
@@ -746,6 +769,7 @@ bool CampusCompass::ProcessCommand(const string &command){
         // removeClass CLASSCODE
         input_stream >> class_code;
         RemoveClass(class_code);
+        return true;
     } else if (keyword == "toggleEdgesClosure"){
         // toggleEdgesClosure N LOCATION_ID_X LOCATION_ID_Y ... LOCATION_ID_A LOCATION_ID_B	
         string n_str;

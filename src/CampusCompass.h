@@ -55,5 +55,5 @@ public:
 
     // test validation functions
     vector<string> GetStudentDirectory();
-    bool is_in(string target_item, vector<string> items);
+    bool IsIn(string target_item, vector<string> items);
 };

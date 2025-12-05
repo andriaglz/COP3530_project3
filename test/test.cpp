@@ -88,19 +88,19 @@
 
 //     SECTION("1 - dropClass"){
 //         REQUIRE(c.DropClass(student_id,"COP3530"));
-//         REQUIRE(c.is_in(student_id,c.GetStudentDirectory()));
+//         REQUIRE(c.IsIn(student_id,c.GetStudentDirectory()));
 //         REQUIRE(c.DropClass(student_id,"COP3504"));
-//         REQUIRE(!c.is_in(student_id,c.GetStudentDirectory()));
+//         REQUIRE(!c.IsIn(student_id,c.GetStudentDirectory()));
 //     }
 //     SECTION("2 - removeClass"){
 //         REQUIRE(c.RemoveClass("COP3530") == 1);
 //         REQUIRE(c.Insert(student_name,"12345678",residence_id,class_codes));
 //         REQUIRE(c.RemoveClass("COP3504") == 2);
-//         REQUIRE(!c.is_in(student_id,c.GetStudentDirectory()));
+//         REQUIRE(!c.IsIn(student_id,c.GetStudentDirectory()));
 //     }
 //     SECTION("3 - remove"){
 //         REQUIRE(c.Remove(student_id));
-//         REQUIRE(!c.is_in(student_id,c.GetStudentDirectory()));
+//         REQUIRE(!c.IsIn(student_id,c.GetStudentDirectory()));
 //     }
 //     SECTION("4 - replaceClass"){
 //         REQUIRE(c.ReplaceClass(student_id,"COP3530","MAC2311"));
