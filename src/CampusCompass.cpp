@@ -325,6 +325,12 @@ bool CampusCompass::DropClass(string student_id,string class_code){
     Fails if a student with STUDENT_ID does not have CLASSCODE
     prints “successful” if dropping is successful and prints “unsuccessful” otherwise.
     */
+    // validation
+    if (student_directory.find(student_id) == student_directory.end())
+        return false;
+    auto student_classes = student_directory[student_id].class_codes;
+    if (student_classes.find(class_code) == student_classes.end())
+        return false;
     // remove student from class
     class_directory[class_code].students_enrolled.erase(student_id);
     // remove class from student schedule
@@ -342,6 +348,15 @@ bool CampusCompass::ReplaceClass(string student_id, string class_code_1, string 
         or if there is no class with code CLASSCODE_2
     prints “successful” if the replacement is successful and prints “unsuccessful” otherwise.
     */
+    // validation
+    if (class_code_1 == class_code_2)
+        return false;
+    auto student_classes = student_directory[student_id].class_codes;
+    if (student_classes.find(class_code_1) == student_classes.end())
+        return false;
+    if (student_classes.find(class_code_2) != student_classes.end())
+        return false;
+    
     // remove student from class 1
     DropClass(student_id,class_code_1);
     // add student to class 2
@@ -475,12 +490,16 @@ pair<int,stack<string>> CampusCompass::ShortestPath(string s, string dest){
     for (string v : V_S){
         // if there is an edge (s,v)
         int edge_idx = FindEdgeIndex(s,v);
-        int w = graph[s][edge_idx].second;
-        if (edge_idx != -1 && w >= 0) {
-            // set p[v] to s
-            p[v] = s;
-            // set d[v] to w(s,v)
-            d[v] = w;
+        if (edge_idx != -1){
+            int w = graph[s][edge_idx].second;
+            if (w >= 0) {
+                // set p[v] to s
+                p[v] = s;
+                // set d[v] to w(s,v)
+                d[v] = w;
+            } else {
+                d[v] = INF;
+            }
         }
         // else
         else
@@ -511,7 +530,7 @@ pair<int,stack<string>> CampusCompass::ShortestPath(string s, string dest){
             string v = pair.first;
             int w = pair.second;
             // if d[u]+w(u,v) is less than d[v]
-            if (w >= 0 && d[u] + w < d[v]){     //w>=0 only considers open paths
+            if (V_S.find(v) != V_S.end() && w >= 0 && d[u] + w < d[v]){
                 // set d[v] to d[u] + w(u,v)
                 d[v] = d[u] + w;
                 // set p[v] to u
@@ -538,7 +557,7 @@ pair<int,stack<string>> CampusCompass::ShortestPath(string s, string dest){
     return make_pair(shortest_distance,shortest_path);
 }
 
-bool CampusCompass::PrintShortestEdges(string student_id){
+vector<int> CampusCompass::PrintShortestEdges(string student_id){
     /*
     Prints the shortest walking time from a student's residence to each of their classes using only 
         currently available edges.
@@ -555,13 +574,15 @@ bool CampusCompass::PrintShortestEdges(string student_id){
     The classes should be sorted in lexographical order. (E.g., COP3502 would come before COP3503).
     */
     Student s = student_directory[student_id];
+    vector<int> shortest_edges;
     cout << "Name: " << s.student_name << endl;
     for (string class_code : s.class_codes){
         string class_location_id = class_directory[class_code].location_id;
         int shortest_distance = ShortestPath(s.residence_location_id, class_location_id).first;
         cout << class_code << " | " << "Total Time: " << shortest_distance << endl;
+        shortest_edges.push_back(shortest_distance);
     }
-    return true;
+    return shortest_edges;
 }
 
 map<string, vector<pair<string,int>>> CampusCompass::GetMST(map<string, vector<pair<string,int>>> subgraph, set<string> vertices){
@@ -610,7 +631,7 @@ map<string, vector<pair<string,int>>> CampusCompass::GetMST(map<string, vector<p
     return mst;
 }
 
-bool CampusCompass::PrintStudentZone(string student_id){
+int CampusCompass::PrintStudentZone(string student_id){
     /*
     A student’s “zone” is the minimum-cost set of edges required to connect their residence and all their classes' locations, based on their shortest-path routes.
     You will be given a valid student ID
@@ -682,7 +703,7 @@ bool CampusCompass::PrintStudentZone(string student_id){
     // Student Zone Cost For [Student Name]: X
     cout << "Student Zone Cost For " << s.student_name << ": " << total_cost << endl;
 
-    return true;
+    return total_cost;
 }
 
 int GetMinutes(string hh_mm){
@@ -691,7 +712,7 @@ int GetMinutes(string hh_mm){
     return min;
 }
 
-bool CampusCompass::VerifySchedule(string student_id){
+vector<bool> CampusCompass::VerifySchedule(string student_id){
     /*
     A student's schedule is only feasible if they can physically get from one class to the next in the allotted time.
     For example, if COP3530 is from 10:40-11:30 and CDA3101 is from 11:45-12:35, but the shortest path from 
@@ -707,9 +728,8 @@ bool CampusCompass::VerifySchedule(string student_id){
     [ClassCode2] - [ClassCode3] "Cannot make it!"
     */
     set<string> class_codes = student_directory[student_id].class_codes;
-    bool success = true;
     if (class_codes.size() <= 1){
-        return false;
+        return {};
     }
     // order schedule by time
     // sort classes by start times
@@ -724,6 +744,7 @@ bool CampusCompass::VerifySchedule(string student_id){
         Class c = class_directory[p.second];
         class_place_times.push_back(make_pair(make_pair(p.second,c.location_id),make_pair(c.start_time,c.end_time)));
     }
+    vector<bool> can_make_it;
     for (int i=0;i<class_place_times.size()-1;i++){
         auto curr_class = class_place_times[i];
         auto future_class = class_place_times[i+1];
@@ -735,13 +756,14 @@ bool CampusCompass::VerifySchedule(string student_id){
         int elapsed_minutes = GetMinutes(end) - GetMinutes(start);
         cout << curr_class.first.first << " - " << future_class.first.first << " ";
         if (shortest_distance > elapsed_minutes || shortest_distance == -1){
-            cout << "Cannot make it!" << endl;
-            success = false;
+            can_make_it.push_back(false);
+            cout << "\"Cannot make it!\"" << endl;
         } else {
-            cout << "Can make it!" << endl;
+            can_make_it.push_back(true);
+            cout << "\"Can make it!\"" << endl;
         }
     }
-    return success;
+    return can_make_it;
 }
 
 
@@ -810,15 +832,20 @@ bool CampusCompass::ProcessCommand(const string &command){
     } else if (keyword == "printShortestEdges"){
         // printShortestEdges ID
         input_stream >> student_id;
-        return PrintShortestEdges(student_id);
+        PrintShortestEdges(student_id);
+        return true;
     } else if (keyword == "printStudentZone"){
         // printStudentZone ID
         input_stream >> student_id;
-        return PrintStudentZone(student_id);
+        PrintStudentZone(student_id);
+        return true;
     } else if (keyword == "verifySchedule"){
         // verifySchedule ID
         input_stream >> student_id;
-        return VerifySchedule(student_id);
+        vector<bool> successes = VerifySchedule(student_id);
+        if (successes.size() == 0)
+            return false;
+        return true;
     } else {
         // invalid keyword
         return false;

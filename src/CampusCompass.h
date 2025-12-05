@@ -48,10 +48,10 @@ public:
     bool CheckEdgeStatus(string location_1,string location_2);
     bool IsConnected(string location_1,string location_2);
     pair<int,stack<string>> ShortestPath(string start, string end);                                         //helper
-    bool PrintShortestEdges(string student_id);
+    vector<int> PrintShortestEdges(string student_id);
     map<string,vector<pair<string,int>>> GetMST(map<string,vector<pair<string,int>>> subgraph,set<string> vertices); //helper
-    bool PrintStudentZone(string student_id);
-    bool VerifySchedule(string student_id);
+    int PrintStudentZone(string student_id);
+    vector<bool> VerifySchedule(string student_id);
 
     // test validation functions
     vector<string> GetStudentDirectory();
