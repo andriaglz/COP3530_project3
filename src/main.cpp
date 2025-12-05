@@ -9,17 +9,21 @@ int main() {
     bool success;
 
     // ingest CSV data
-    success = compass.ParseCSV("../data/edges.csv", "../data/classes.csv");
+    success = compass.ParseCSV("data/edges.csv", "data/classes.csv");
     if (!success) {
         cout << "Error parsing csv files" << endl;
         return 0;
     }
 
     // parse commandline input
+    string no_of_lines_str;
     int no_of_lines;
     string command;
-    cin >> no_of_lines;
-    cin.ignore(); // ignore newline that first cin left over
+    // cin >> no_of_lines;
+    // cin.ignore(); // ignore newline that first cin left over
+
+    getline(cin,no_of_lines_str);
+    no_of_lines = stoi(no_of_lines_str);
 
     for (int i = 0; i < no_of_lines; i++) {
         getline(cin, command);

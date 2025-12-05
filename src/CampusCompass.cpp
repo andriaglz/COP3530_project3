@@ -255,6 +255,7 @@ bool CampusCompass::ParseCommand(const string &command) {
         location_ids.push_back(argument_1);
         string location_2;
         input_stream >> location_2;
+        location_ids.push_back(location_2);
         for (string location : location_ids){
             if (locations.find(location) == locations.end())
                 // location must be present in records
@@ -415,7 +416,7 @@ bool CampusCompass::CheckEdgeStatus(string location_1,string location_2){
 
     int weight = graph[location_1][edge_idx].second;
     if (weight < 0)
-        cout << "close" << endl;
+        cout << "closed" << endl;
     else
         cout << "open" << endl;
     return true;
