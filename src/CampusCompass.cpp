@@ -599,6 +599,9 @@ map<string, vector<pair<string,int>>> CampusCompass::GetMST(map<string, vector<p
                 }
             }
         }
+        if (least_weight == INF)
+            break;
+
         // add to mst and update sets
         mst[from].push_back(make_pair(to,least_weight));
         V_S.erase(to);
@@ -631,19 +634,29 @@ bool CampusCompass::PrintStudentZone(string student_id){
         shortest_paths.push_back(shortest_path);
     }
     
-    // create a sub-graph that contains all vertices from all the shortest paths
-    map<string,vector<pair<string,int>>> subgraph;
+    // create a subgraph that contains all vertices from all the shortest paths
     set<string> vertices;
     for (stack<string> stk : shortest_paths){
         while (!stk.empty()){
-            string from = stk.top();
-            vertices.insert(from);
+            vertices.insert(stk.top());
             stk.pop();
-            if (!stk.empty()){
-                string to = stk.top();
-                int edge_idx = FindEdgeIndex(from,to);
-                int w = graph[from][edge_idx].second;
-                subgraph[from].push_back(make_pair(to,w));
+        }
+    }
+    map<string,vector<pair<string,int>>> subgraph;
+    set<string> subgraph_edges;
+    for (string from : vertices) {
+        for (auto p : graph[from]){
+            string to = p.first;
+            int w = p.second;
+            if (vertices.find(to) != vertices.end()){
+                string edge_1 = from+to;
+                string edge_2 = to+from;
+                if (subgraph_edges.find(edge_1) == subgraph_edges.end() && subgraph_edges.find(edge_2) == subgraph_edges.end()){
+                    subgraph[from].push_back(make_pair(to,w));
+                    subgraph[to].push_back(make_pair(from,w));
+                    subgraph_edges.insert(edge_1);
+                    subgraph_edges.insert(edge_2);
+                }
             }
         }
     }
