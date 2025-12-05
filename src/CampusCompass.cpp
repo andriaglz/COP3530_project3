@@ -250,7 +250,7 @@ bool CampusCompass::ParseCommand(const string &command) {
     }
 
     // two location commands
-    if (IsIn(keyword,{"checkEdgeStatus","isConnected"})){
+    if (keyword == "isConnected"){
         vector<string> location_ids;
         location_ids.push_back(argument_1);
         string location_2;
