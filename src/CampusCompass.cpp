@@ -45,6 +45,11 @@ bool ParseName(istringstream& input_stream, string& name){
         return false;
     if (name.empty())
         return false;
+    for (char l : name){
+        if (!isalpha(l) && l != ' ' && l != '-'){
+            return false;
+        }
+    }
     return true;
 }
 
@@ -152,11 +157,13 @@ bool CampusCompass::ParseCommand(const string &command) {
         if (!IsValidStudentId(id))
             return false;
         // verify n
-        int n_int;
+        int n_int = 0;
         vector<string> class_codes;
         if (IsInteger(n_str))
             n_int = stoi(n_str);
         else
+            return false;
+        if (n_int < 1 || n_int > 6)
             return false;
         for (int i=0; i<n_int; i++){
             string class_code;
@@ -224,11 +231,11 @@ bool CampusCompass::ParseCommand(const string &command) {
             return false;
     }
     // removeClass
-    if (keyword == "removeClass"){
-        if (class_directory.find(argument_1) == class_directory.end())
-            // class code must be present in the directory
-            return false;
-    }
+    // if (keyword == "removeClass"){
+    //     if (class_directory.find(argument_1) == class_directory.end())
+    //         // class code must be present in the directory
+    //         return false;
+    // }
 
     // toggleEdgesClosure
     if (keyword == "toggleEdgesClosure"){
@@ -843,8 +850,10 @@ bool CampusCompass::ProcessCommand(const string &command){
         // verifySchedule ID
         input_stream >> student_id;
         vector<bool> successes = VerifySchedule(student_id);
-        if (successes.size() == 0)
+        if (successes.size() <= 0){
+            cout << "unsuccessful" << endl;
             return false;
+        } 
         return true;
     } else {
         // invalid keyword
